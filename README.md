@@ -4,6 +4,15 @@ Small library for managing feature flag to support Agile development models. By 
 
 ## Configuring a Feature Flag
 
+### Configuring Via Custom Metadata
+
+Navigate to Setup -> Custom Metadata -> Feature Flag -> Manage Feature Flags
+
+Create or update a record (example):
+Label: Feature A
+Name: FeatureA
+IsOn__c: true
+
 ## Implementing the Feature Switch
 
 Adding a feature flag is fairly simple. You simply invoke Feature.isOn method and pass in the name of the feature:
