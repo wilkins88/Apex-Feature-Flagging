@@ -3,14 +3,16 @@
  * @description Feature class for managing feature flagging within Apex. There are many ways that features can be turned on or off (triggers, apis, etc.), but this affords
  * more granular control to dictate logic flows within a specific class or method.
  */
-public class Feature {
+public inherited sharing class Feature {
     @TestVisible
     private static final String CANNOT_MOCK_OUTSIDE_TEST = 'Feature flags cannot be mocked outside of a test context.';
 
     @TestVisible
     private static Map<String, Boolean> features {
         get {
-            if (features == null) features = new Map<String, Boolean>();
+            if (features == null) {
+                features = new Map<String, Boolean>();
+            }
             return features;
         } set;
     }
@@ -21,7 +23,9 @@ public class Feature {
      * @return             True if the features is on, false if the feature is off or isn't configured
      */ 
     public static Boolean isOn(String featureName) {
-        if (!features.containsKey(featureName)) loadFeatureSetting(featureName);
+        if (!features.containsKey(featureName)) {
+            loadFeatureSetting(featureName);
+        }
         return features.get(featureName);
     }
 
@@ -32,7 +36,9 @@ public class Feature {
      * @param  isOn        Marking the feature as on or off
      */ 
     public static void setMockFeatureFlag(String featureName, Boolean isOn) {
-        if (!System.Test.isRunningTest()) throw new FeatureFlagException(CANNOT_MOCK_OUTSIDE_TEST);
+        if (!System.Test.isRunningTest()) {
+            throw new FeatureFlagException(CANNOT_MOCK_OUTSIDE_TEST);
+        }
         features.put(featureName, isOn);
     }
 
@@ -41,13 +47,17 @@ public class Feature {
      * @param  featureName the name of the feature to load
      */ 
     @TestVisible
+    @SuppressWarnings('PMD.ApexCRUDViolation')
     private static void loadFeatureSetting(String featureName) {
         List<FeatureFlag__mdt> featureFlags = [
             SELECT IsOn__c
             FROM FeatureFlag__mdt
             WHERE DeveloperName = :featureName
         ];
-        if (featureFlags.isEmpty()) features.put(featureName, false);
-        else features.put(featureName, featureFlags[0].IsOn__c);
+        if (featureFlags.isEmpty()) {
+            features.put(featureName, false);
+        } else { 
+            features.put(featureName, featureFlags[0].IsOn__c);
+        }
     }
 }
