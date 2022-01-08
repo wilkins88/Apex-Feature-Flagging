@@ -1,0 +1,37 @@
+version: 2.1
+orbs:
+  sfdx: circleci/salesforce-sfdx@2.2.0
+jobs:
+  test_in_scratch:
+    executor: sfdx/default
+    steps:
+      - checkout
+      - sfdx/install
+      - sfdx/auth:
+          defaultusername: tom.wilkins@personal.com
+      - run:
+          command: >-
+            sfdx force:org:create -f ./config/project-scratch-def.json -a ${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BRANCH}
+          name: Create Scratch Org
+      - run:
+          command: >-
+            sfdx force:source:push -u ${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BRANCH}
+          name: Push App To Scratch Org
+      - run:
+          command: >-
+            sfdx force:org:open -u ${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BRANCH}
+          name: Open Scratch Org
+      - run:
+          command: >-
+            sfdx force:apex:test:run --wait 10 --resultformat junit --codecoverage
+            --testlevel RunLocalTests -u ${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BRANCH}
+          name: Run Unit Tests
+      - run:
+          command: >-
+            sfdx force:org:delete --noprompt -u ${CIRCLE_PROJECT_REPONAME}-${CIRCLE_BRANCH}
+          name: Delete scratch org
+          when: always
+workflows:
+  validate:
+    jobs:
+      - test_in_scratch
